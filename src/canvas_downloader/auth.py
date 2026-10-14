@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import json
+import os
 import time
 from pathlib import Path
 
@@ -50,3 +52,27 @@ def login(base_url: str, profile_dir: Path, console: Console) -> tuple[list[dict
 
     console.print("[green]✓ Logged in[/green]")
     return cookies, user_agent
+
+
+def load_session(path: Path, base_url: str) -> tuple[list[dict], str] | None:
+    """Return saved (cookies, user_agent) for base_url, or None if there isn't one."""
+    try:
+        data = json.loads(path.read_text())
+    except (OSError, ValueError):
+        return None
+    if data.get("url") != base_url or not data.get("cookies"):
+        return None
+    return data["cookies"], data.get("user_agent", "Mozilla/5.0")
+
+
+def save_session(path: Path, base_url: str, cookies: list[dict], user_agent: str) -> None:
+    """Persist the session cookies, readable only by the current user."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    fd = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
+    with os.fdopen(fd, "w") as f:
+        json.dump({"url": base_url, "user_agent": user_agent, "cookies": cookies}, f)
+    os.chmod(path, 0o600)
+
+
+def clear_session(path: Path) -> None:
+    path.unlink(missing_ok=True)

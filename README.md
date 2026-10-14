@@ -18,7 +18,9 @@ uv run canvas-dl --url canvas.myschool.edu --out ~/Downloads/Canvas --workers 4
 ```
 
 1. A browser window opens. Log in as usual (SSO/2FA are fine). It closes on its own once you're logged in.
-   The browser profile is kept in `~/.config/canvas-downloader-full/`, so next time you'll often already be logged in.
+   The session cookies are saved to `~/.config/canvas-downloader-full/session.json` (mode `600`), so later runs
+   skip the browser entirely until the session expires. Use `--login` to force a fresh login. The browser
+   profile is kept there too, so re-logging in is often instant.
 2. The TUI lists your courses:
    - type to search (name, code, term), `↓`/`Enter` to move into the list
    - `space` toggles a course, `Ctrl+A` selects every course currently shown, `Ctrl+N` clears
